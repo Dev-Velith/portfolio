@@ -49,20 +49,17 @@ export default function ContactSection() {
     // Strategy 1: If Web3Forms Access Key is provided, submit cleanly via Web3Forms API
     if (accessKey && accessKey.trim().length > 0) {
       try {
+        const payload = new FormData();
+        payload.append('access_key', accessKey.trim());
+        payload.append('name', formData.name);
+        payload.append('email', formData.email);
+        payload.append('message', formData.message);
+        payload.append('subject', `[Portfolio Contact] Message from ${formData.name}`);
+        payload.append('from_name', formData.name);
+
         const res = await fetch('https://api.web3forms.com/submit', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-          },
-          body: JSON.stringify({
-            access_key: accessKey.trim(),
-            name: formData.name,
-            email: formData.email,
-            message: formData.message,
-            subject: `[Portfolio Contact] Message from ${formData.name}`,
-            from_name: formData.name,
-          }),
+          body: payload,
         });
 
         const data = await res.json();
