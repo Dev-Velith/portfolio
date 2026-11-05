@@ -1,0 +1,17 @@
+# Next.js
+/.next/
+/out/
+
+# Dependencies
+/node_modules/
+
+# Local data & environment
+.env*.local
+.contact_submissions.json
+
+# Misc
+.DS_Store
+*.pem
+
+# Archive
+/_archive_velith_docs/
