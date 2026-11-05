@@ -6,7 +6,7 @@ import { ArrowUpRight, Mail, CheckCircle2, AlertCircle, Send } from 'lucide-reac
 
 export default function ContactSection() {
   const { profile } = portfolioData;
-  const targetEmail = profile.contactEmail || "123020722+Dev-Velith@users.noreply.github.com";
+  const targetEmail = profile.contactEmail || "lukejcarter15@gmail.com";
 
   const [formData, setFormData] = useState({
     name: '',

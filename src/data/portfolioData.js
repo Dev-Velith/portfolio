@@ -3,8 +3,8 @@ export const portfolioData = {
     name: "Luke Carter",
     role: "Unreal Developer · Computer Software · C++",
     headline: "Computer Science student at the University of Central Arkansas who builds gameplay systems in Unreal Engine 5 — and the networked software underneath them.",
-    // You can replace this with your personal email (e.g. luke@gmail.com). Messages submitted through the contact form are forwarded directly to this inbox.
-    contactEmail: "123020722+Dev-Velith@users.noreply.github.com",
+    email: "lukejcarter15@gmail.com",
+    contactEmail: "lukejcarter15@gmail.com",
     about: [
       "As a Computer Science student at the University of Central Arkansas, I'm working toward a Bachelor of Science degree, expected in May 2026. My coursework has given me a solid foundation in programming and problem-solving, which I now apply to my passion for game development and design.",
       "At Akiyam Solutions I collaborate with gameplay programmers and designers in an agile environment — implementing modular weapon systems, building scalable gameplay features in Blueprints and C++, and enhancing user interfaces in Unreal Engine 5. My experience at Sports Media Inc. includes crafting Game Design Documents, designing gameplay flowcharts and contributing to interface prototypes.",
