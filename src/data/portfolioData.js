@@ -5,6 +5,7 @@ export const portfolioData = {
     headline: "Computer Science student at the University of Central Arkansas who builds gameplay systems in Unreal Engine 5 — and the networked software underneath them.",
     email: "lukejcarter15@gmail.com",
     contactEmail: "lukejcarter15@gmail.com",
+    web3FormsAccessKey: "", // Set Web3Forms Access Key here (https://web3forms.com) for direct in-page submission
     about: [
       "As a Computer Science student at the University of Central Arkansas, I'm working toward a Bachelor of Science degree, expected in May 2026. My coursework has given me a solid foundation in programming and problem-solving, which I now apply to my passion for game development and design.",
       "At Akiyam Solutions I collaborate with gameplay programmers and designers in an agile environment — implementing modular weapon systems, building scalable gameplay features in Blueprints and C++, and enhancing user interfaces in Unreal Engine 5. My experience at Sports Media Inc. includes crafting Game Design Documents, designing gameplay flowcharts and contributing to interface prototypes.",

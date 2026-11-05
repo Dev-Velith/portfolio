@@ -2,11 +2,12 @@
 
 import React, { useState } from 'react';
 import { portfolioData } from '../data/portfolioData';
-import { ArrowUpRight, Mail, CheckCircle2, AlertCircle, Send } from 'lucide-react';
+import { ArrowUpRight, Mail, CheckCircle2, Send, Copy, Check } from 'lucide-react';
 
 export default function ContactSection() {
   const { profile } = portfolioData;
-  const targetEmail = profile.contactEmail || "lukejcarter15@gmail.com";
+  const targetEmail = profile.contactEmail || profile.email || "lukejcarter15@gmail.com";
+  const accessKey = profile.web3FormsAccessKey || "";
 
   const [formData, setFormData] = useState({
     name: '',
@@ -14,51 +15,80 @@ export default function ContactSection() {
     message: '',
   });
 
-  const [status, setStatus] = useState('idle'); // idle | submitting | success | error
+  const [status, setStatus] = useState('idle'); // idle | submitting | success | mailto
   const [responseMsg, setResponseMsg] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyEmail = () => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(targetEmail);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2200);
+    }
+  };
+
+  const buildMailtoUrl = (name = formData.name, email = formData.email, message = formData.message) => {
+    const subject = encodeURIComponent(
+      name ? `[Portfolio Inquiry] from ${name}` : 'Gameplay Programming Inquiry'
+    );
+    const body = encodeURIComponent(
+      `${message ? `${message}\n\n` : ''}${
+        name || email
+          ? `--------------------------\nFrom: ${name || 'Visitor'} <${email || 'not provided'}>`
+          : ''
+      }`
+    );
+    return `mailto:${targetEmail}?subject=${subject}&body=${body}`;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus('submitting');
     setResponseMsg('');
 
-    try {
-      // FormSubmit AJAX submission directly forwards the message to Luke's email without requiring a server
-      const res = await fetch(`https://formsubmit.co/ajax/${targetEmail}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          message: formData.message,
-          _subject: `[Portfolio Contact] Message from ${formData.name}`,
-          _replyto: formData.email,
-        }),
-      });
+    // Strategy 1: If Web3Forms Access Key is provided, submit cleanly via Web3Forms API
+    if (accessKey && accessKey.trim().length > 0) {
+      try {
+        const res = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            access_key: accessKey.trim(),
+            name: formData.name,
+            email: formData.email,
+            message: formData.message,
+            subject: `[Portfolio Contact] Message from ${formData.name}`,
+            from_name: formData.name,
+          }),
+        });
 
-      const data = await res.json();
+        const data = await res.json();
 
-      if (res.ok && (data.success === 'true' || data.success === true)) {
-        setStatus('success');
-        setResponseMsg('Your message has been sent successfully. Thank you for reaching out!');
-        setFormData({ name: '', email: '', message: '' });
-      } else {
-        // In case FormSubmit returns an unactivated notice or error
-        setStatus('success');
-        setResponseMsg('Your message was submitted. If this is the first submission, FormSubmit sends an activation link to confirm the inbox.');
-        setFormData({ name: '', email: '', message: '' });
+        if (res.ok && data.success) {
+          setStatus('success');
+          setResponseMsg('Your message has been sent directly to Luke’s inbox. Thank you for reaching out!');
+          setFormData({ name: '', email: '', message: '' });
+          return;
+        }
+      } catch (err) {
+        // Fall back to mailto handoff below if network fails
       }
-    } catch (err) {
-      // Graceful fallback to mailto link
-      setStatus('error');
-      setResponseMsg('Direct web submission failed. You can reach out directly via email.');
+    }
+
+    // Strategy 2: Pre-filled mailto launch with clean handoff (always guaranteed delivery)
+    const mailtoUrl = buildMailtoUrl();
+    setStatus('mailto');
+    setResponseMsg(`Launching your email app to send directly to ${targetEmail}...`);
+
+    if (typeof window !== 'undefined') {
+      window.location.href = mailtoUrl;
     }
   };
 
-  const mailtoLink = `mailto:${targetEmail}?subject=Gameplay%20Programming%20Inquiry&body=Hi%20Luke,%0D%0A%0D%0A`;
+  const defaultMailto = buildMailtoUrl('', '', '');
 
   return (
     <section id="contact" className="py-20 border-b border-zinc-900 bg-black scroll-mt-20">
@@ -79,12 +109,30 @@ export default function ContactSection() {
           {/* Quick Action Links */}
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <a
-              href={mailtoLink}
+              href={defaultMailto}
               className="px-5 py-2.5 rounded-full bg-white text-black hover:bg-zinc-200 text-xs font-semibold tracking-wide transition-colors flex items-center gap-1.5"
             >
               <Mail className="w-3.5 h-3.5" />
               <span>Email me directly</span>
             </a>
+
+            <button
+              type="button"
+              onClick={handleCopyEmail}
+              className="px-5 py-2.5 rounded-full border border-zinc-800 bg-black hover:border-zinc-700 text-xs font-medium text-zinc-300 hover:text-white transition-colors flex items-center gap-1.5"
+            >
+              {copied ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-zinc-300" />
+                  <span>Copied {targetEmail}</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5 text-zinc-500" />
+                  <span>Copy email address</span>
+                </>
+              )}
+            </button>
 
             {profile.links.map((link) => (
               <a
@@ -104,30 +152,32 @@ export default function ContactSection() {
           <div className="mt-12 pt-8 border-t border-zinc-900">
             <div className="text-xs font-mono uppercase tracking-wider text-zinc-500 mb-4 flex items-center justify-between">
               <span>Send a Message</span>
-              <span className="text-[11px] text-zinc-400">Delivered directly to inbox</span>
+              <span className="text-[11px] text-zinc-400">{targetEmail}</span>
             </div>
 
             {status === 'success' && (
               <div className="mb-6 p-4 rounded-lg bg-zinc-900 border border-zinc-700 text-xs text-zinc-200 flex items-start gap-2.5">
                 <CheckCircle2 className="w-4 h-4 text-white shrink-0 mt-0.5" />
                 <div>
-                  <div className="font-semibold text-white">Delivered</div>
+                  <div className="font-semibold text-white">Message Delivered</div>
                   <div className="text-zinc-400 mt-0.5">{responseMsg}</div>
                 </div>
               </div>
             )}
 
-            {status === 'error' && (
+            {status === 'mailto' && (
               <div className="mb-6 p-4 rounded-lg bg-zinc-900 border border-zinc-700 text-xs text-zinc-200 flex items-start gap-2.5">
-                <AlertCircle className="w-4 h-4 text-zinc-400 shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-4 h-4 text-white shrink-0 mt-0.5" />
                 <div className="flex-1">
-                  <div className="font-semibold text-white">Notice</div>
-                  <div className="text-zinc-400 mt-0.5">{responseMsg}</div>
+                  <div className="font-semibold text-white">Opening Email Client</div>
+                  <div className="text-zinc-400 mt-0.5">
+                    Your message has been pre-formatted for <strong className="text-white">{targetEmail}</strong>.
+                  </div>
                   <a
-                    href={mailtoLink}
-                    className="mt-2 inline-block text-white underline hover:no-underline font-medium"
+                    href={buildMailtoUrl()}
+                    className="mt-2.5 inline-flex items-center gap-1.5 text-white underline hover:no-underline font-medium"
                   >
-                    Click here to open in your default mail app →
+                    <span>Click here if your mail app didn't open automatically →</span>
                   </a>
                 </div>
               </div>
